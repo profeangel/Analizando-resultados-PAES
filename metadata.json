@@ -1,0 +1,6 @@
+{
+  "name": "PAES Analyzer",
+  "description": "Analiza y visualiza los resultados de ensayos PAES a partir de archivos CSV. Incluye filtros, búsqueda y reportes automáticos.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
