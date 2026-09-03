@@ -10,7 +10,7 @@ export default defineConfig(() => {
     // Reemplaza 'NOMBRE_DE_TU_REPOSITORIO' con el nombre exacto de tu repo en GitHub.
     // Ejemplo: si tu url es https://juan.github.io/mi-app/, pon base: '/mi-app/'
     // Si tu url es directamente https://juan.github.io, entonces borra esta lÃ­nea o pon base: '/'
-    base: '/NOMBRE_DE_TU_REPOSITORIO/',
+    base: '/Analizando-resultados-PAES/',
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
