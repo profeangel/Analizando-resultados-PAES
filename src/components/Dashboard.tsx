@@ -245,10 +245,10 @@ export default function Dashboard({ data, onReset, onAppendData }: DashboardProp
         <div className="flex flex-wrap items-center gap-3">
           <button 
             onClick={() => handleExportPDF()}
-            title="Abre el diálogo de impresión. Asegúrate de seleccionar 'Guardar como PDF' como destino."
-            className="flex items-center gap-1.5 bg-slate-100 text-slate-700 px-3 py-1.5 rounded-md text-sm font-semibold border border-slate-200 hover:bg-slate-200 transition-colors"
+            title="Generar reporte PDF"
+            className="flex items-center gap-1.5 bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-semibold border border-indigo-700 hover:bg-indigo-700 transition-colors shadow-sm"
           >
-            <Printer size={16} /> Imprimir / PDF
+            <Download size={16} /> Descargar Reporte PDF
           </button>
           <button 
             onClick={() => fileInputRef.current?.click()}
