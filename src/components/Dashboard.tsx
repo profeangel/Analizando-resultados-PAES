@@ -1,7 +1,8 @@
 import React, { useState, useMemo, useRef } from 'react';
-import { Search, Filter, ArrowUpRight, ArrowDownRight, Minus, FilePlus, Download, Printer, BookOpen, ChevronUp, ChevronDown, ChevronsUpDown, Info, Loader2 } from 'lucide-react';
+import { Search, Filter, ArrowUpRight, ArrowDownRight, Minus, FilePlus, Download, Printer, BookOpen, ChevronUp, ChevronDown, ChevronsUpDown, Info, Loader2, Copy } from 'lucide-react';
 import { StudentResult } from '../types';
 import { AverageScoresChart, ScoreDistributionChart, PerformancePieChart } from './Charts';
+import StatisticalSummary from './StatisticalSummary';
 import { parseCSVs } from '../utils';
 import { scoreToNota } from '../scoreToGrade';
 import { getClassification, SubjectType } from '../classification';
@@ -40,6 +41,90 @@ export default function Dashboard({ data, onReset, onAppendData }: DashboardProp
     contentRef: printComponentRef,
     documentTitle: 'Reporte_Resultados_PAES'
   });
+
+  const handleCopyChart = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    const container = e.currentTarget.closest('.chart-wrapper');
+    if (!container) return;
+    
+    // Buscar todos los SVGs dentro del contenedor, ignorando los íconos de los botones (lucide)
+    const svgs = Array.from(container.querySelectorAll('svg:not(.lucide)')) as SVGSVGElement[];
+    
+    if (svgs.length === 0) {
+      alert("No se encontró el gráfico para copiar.");
+      return;
+    }
+    
+    // Encontrar el SVG más grande por área (garantiza que copiemos el gráfico real y no un cuadrito de la leyenda)
+    let svg = svgs[0];
+    let maxArea = 0;
+    svgs.forEach(s => {
+      const rect = s.getBoundingClientRect();
+      const area = rect.width * rect.height;
+      if (area > maxArea) {
+        maxArea = area;
+        svg = s;
+      }
+    });
+    
+    try {
+      const btn = e.currentTarget;
+      const originalTitle = btn.title;
+      btn.title = "Copiando...";
+      
+      const rect = svg.getBoundingClientRect();
+      
+      // Clonar el SVG para inyectarle estilos sin afectar la vista web
+      const clonedSvg = svg.cloneNode(true) as SVGSVGElement;
+      clonedSvg.setAttribute('width', rect.width.toString());
+      clonedSvg.setAttribute('height', rect.height.toString());
+      
+      // Inyectar estilos básicos para asegurar que el texto se vea bien (ya que las clases CSS de Tailwind se pierden al copiar el SVG puro)
+      const style = document.createElement('style');
+      style.innerHTML = `
+        text { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 14px; fill: #334155; }
+        .recharts-cartesian-axis-tick-value { font-size: 12px; }
+      `;
+      clonedSvg.insertBefore(style, clonedSvg.firstChild);
+      
+      const svgData = new XMLSerializer().serializeToString(clonedSvg);
+      
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      const scale = 2; // Alta resolución
+      
+      const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(svgBlob);
+      
+      img.onload = () => {
+        canvas.width = rect.width * scale;
+        canvas.height = rect.height * scale;
+        if (ctx) {
+          ctx.scale(scale, scale);
+          ctx.fillStyle = '#ffffff'; // Fondo blanco
+          ctx.fillRect(0, 0, rect.width, rect.height);
+          ctx.drawImage(img, 0, 0);
+          
+          canvas.toBlob((blob) => {
+            if (blob) {
+              navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+                .then(() => {
+                  btn.title = "¡Copiado!";
+                  setTimeout(() => btn.title = originalTitle, 2000);
+                })
+                .catch(() => alert('El navegador no soporta el pegado directo. Intenta descargar el PDF.'));
+            }
+          });
+        }
+        URL.revokeObjectURL(url);
+      };
+      
+      img.src = url;
+    } catch (err) {
+      console.error(err);
+      alert('Error al copiar el gráfico.');
+    }
+  };
 
   const handleSort = (key: string) => {
     let direction: 'asc' | 'desc' = 'asc';
@@ -245,10 +330,10 @@ export default function Dashboard({ data, onReset, onAppendData }: DashboardProp
         <div className="flex flex-wrap items-center gap-3">
           <button 
             onClick={() => handleExportPDF()}
-            title="Generar reporte PDF"
-            className="flex items-center gap-1.5 bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-semibold border border-indigo-700 hover:bg-indigo-700 transition-colors shadow-sm"
+            title="Abre el diálogo de impresión. Asegúrate de seleccionar 'Guardar como PDF' como destino."
+            className="flex items-center gap-1.5 bg-slate-100 text-slate-700 px-3 py-1.5 rounded-md text-sm font-semibold border border-slate-200 hover:bg-slate-200 transition-colors"
           >
-            <Download size={16} /> Descargar Reporte PDF
+            <Printer size={16} /> Imprimir / PDF
           </button>
           <button 
             onClick={() => fileInputRef.current?.click()}
@@ -278,6 +363,8 @@ export default function Dashboard({ data, onReset, onAppendData }: DashboardProp
           <h2 className="text-3xl font-bold text-slate-800">Reporte de Resultados PAES</h2>
           <p className="text-slate-500 mt-2 text-lg">Filtro aplicado: {courseFilter === 'Todos' ? 'Todos los cursos' : courseFilter} | Asignatura: {subjectFilter}</p>
         </div>
+
+        <StatisticalSummary data={filteredData} subjectFilter={subjectFilter} courseFilter={courseFilter} />
 
         <div className="flex items-center gap-2 mb-4 print:hidden">
           <h2 className="text-lg font-bold text-slate-800">Métricas Generales</h2>
@@ -332,39 +419,57 @@ export default function Dashboard({ data, onReset, onAppendData }: DashboardProp
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 print:block print:space-y-16">
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm print:shadow-none print:border-none print:p-0 print:break-inside-avoid print-page-break">
+        <div className="chart-wrapper group relative bg-white p-6 rounded-xl border border-slate-200 shadow-sm print:shadow-none print:border-none print:p-0 print:break-inside-avoid print-page-break">
+          <button onClick={handleCopyChart} title="Copiar como imagen" className="absolute top-4 right-4 p-2 bg-slate-50 text-slate-400 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-slate-100 hover:text-indigo-600 print:hidden z-10">
+            <Copy size={16} />
+          </button>
           <h3 className="font-bold text-slate-800 mb-6 print:text-2xl border-b pb-2 print:border-slate-300">Promedios por Curso</h3>
           <AverageScoresChart data={filteredData} subjectFilter={subjectFilter} />
         </div>
         
         {subjectFilter === 'Todas' ? (
           <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm print:shadow-none print:border-none print:p-0 print:break-inside-avoid print:flex-col md:flex-row gap-6 print-page-break">
-            <div className="flex-1 print:mb-10">
+            <div className="chart-wrapper group relative flex-1 print:mb-10">
+              <button onClick={handleCopyChart} title="Copiar como imagen" className="absolute top-0 right-0 p-2 bg-slate-50 text-slate-400 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-slate-100 hover:text-indigo-600 print:hidden z-10">
+                <Copy size={16} />
+              </button>
               <h3 className="font-bold text-slate-800 mb-6 text-center print:text-2xl border-b pb-2 print:border-slate-300">Niveles Lenguaje</h3>
               <PerformancePieChart data={filteredData} subjectFilter="Lenguaje" />
             </div>
             <div className="hidden md:block w-px bg-slate-200 my-4 print:hidden"></div>
-            <div className="flex-1">
+            <div className="chart-wrapper group relative flex-1">
+              <button onClick={handleCopyChart} title="Copiar como imagen" className="absolute top-0 right-0 p-2 bg-slate-50 text-slate-400 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-slate-100 hover:text-indigo-600 print:hidden z-10">
+                <Copy size={16} />
+              </button>
               <h3 className="font-bold text-slate-800 mb-6 text-center print:text-2xl border-b pb-2 print:border-slate-300">Niveles Matemáticas</h3>
               <PerformancePieChart data={filteredData} subjectFilter="Matemáticas" />
             </div>
           </div>
         ) : (
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm print:shadow-none print:border-none print:p-0 print:break-inside-avoid print-page-break">
+          <div className="chart-wrapper group relative bg-white p-6 rounded-xl border border-slate-200 shadow-sm print:shadow-none print:border-none print:p-0 print:break-inside-avoid print-page-break">
+            <button onClick={handleCopyChart} title="Copiar como imagen" className="absolute top-4 right-4 p-2 bg-slate-50 text-slate-400 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-slate-100 hover:text-indigo-600 print:hidden z-10">
+              <Copy size={16} />
+            </button>
             <h3 className="font-bold text-slate-800 mb-6 print:text-2xl border-b pb-2 print:border-slate-300">Niveles de Desempeño ({subjectFilter})</h3>
             <PerformancePieChart data={filteredData} subjectFilter={subjectFilter} />
           </div>
         )}
 
         {showLang && (
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm lg:col-span-2 print:shadow-none print:border-none print:p-0 print:break-inside-avoid print-page-break">
+          <div className="chart-wrapper group relative bg-white p-6 rounded-xl border border-slate-200 shadow-sm lg:col-span-2 print:shadow-none print:border-none print:p-0 print:break-inside-avoid print-page-break">
+            <button onClick={handleCopyChart} title="Copiar como imagen" className="absolute top-4 right-4 p-2 bg-slate-50 text-slate-400 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-slate-100 hover:text-indigo-600 print:hidden z-10">
+              <Copy size={16} />
+            </button>
             <h3 className="font-bold text-slate-800 mb-6 print:text-2xl border-b pb-2 print:border-slate-300">Distribución Lenguaje</h3>
             <ScoreDistributionChart data={filteredData} subject="Leng. Puntaje" />
           </div>
         )}
 
         {showMath && (
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm lg:col-span-2 print:shadow-none print:border-none print:p-0 print:break-inside-avoid print-page-break">
+          <div className="chart-wrapper group relative bg-white p-6 rounded-xl border border-slate-200 shadow-sm lg:col-span-2 print:shadow-none print:border-none print:p-0 print:break-inside-avoid print-page-break">
+            <button onClick={handleCopyChart} title="Copiar como imagen" className="absolute top-4 right-4 p-2 bg-slate-50 text-slate-400 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-slate-100 hover:text-indigo-600 print:hidden z-10">
+              <Copy size={16} />
+            </button>
             <h3 className="font-bold text-slate-800 mb-6 print:text-2xl border-b pb-2 print:border-slate-300">Distribución Matemáticas</h3>
             <ScoreDistributionChart data={filteredData} subject="Mat. Puntaje" />
           </div>
