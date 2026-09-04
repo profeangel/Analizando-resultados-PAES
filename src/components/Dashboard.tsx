@@ -304,7 +304,7 @@ export default function Dashboard({ data, onReset, onAppendData }: DashboardProp
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 print:grid-cols-3 print:gap-4">
         <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm print:shadow-none print:border-slate-300">
           <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total Estudiantes</p>
           <h2 className="text-3xl font-bold text-slate-800">{stats.totalStudents}</h2>
@@ -327,7 +327,7 @@ export default function Dashboard({ data, onReset, onAppendData }: DashboardProp
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 print:block print:space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 print:grid-cols-2 print:gap-4 print:space-y-0">
         <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm print:shadow-none print:border-slate-300 print:break-inside-avoid">
           <h3 className="font-bold text-slate-800 mb-2">Promedios por Curso</h3>
           <AverageScoresChart data={filteredData} subjectFilter={subjectFilter} />
@@ -373,7 +373,7 @@ export default function Dashboard({ data, onReset, onAppendData }: DashboardProp
           <h3 className="font-bold text-slate-800">Resultados Detallados</h3>
           <div className="text-xs text-slate-500 font-medium">Mostrando {sortedData.length} registros</div>
         </div>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto print:overflow-visible">
           <table className="w-full text-left text-sm border-collapse">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200 print:bg-white select-none">
