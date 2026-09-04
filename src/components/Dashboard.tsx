@@ -304,74 +304,74 @@ export default function Dashboard({ data, onReset, onAppendData }: DashboardProp
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 print:grid-cols-3 print:gap-4">
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm print:shadow-none print:border-slate-300">
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total Estudiantes</p>
-          <h2 className="text-3xl font-bold text-slate-800">{stats.totalStudents}</h2>
-          <p className="text-xs text-slate-500 mt-2">Registros procesados</p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 print:flex print:flex-col print:gap-8 print:mb-12">
+        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm print:shadow-none print:border-none print:p-0">
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 print:text-base print:text-slate-500">Total Estudiantes</p>
+          <h2 className="text-3xl font-bold text-slate-800 print:text-5xl">{stats.totalStudents}</h2>
+          <p className="text-xs text-slate-500 mt-2 print:text-base">Registros procesados</p>
         </div>
         
         {showLang && (
-          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm print:shadow-none print:border-slate-300">
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Promedio Lenguaje</p>
-            <h2 className="text-3xl font-bold text-slate-800">{stats.avgLang}</h2>
+          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm print:shadow-none print:border-none print:p-0">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 print:text-base print:text-slate-500">Promedio Lenguaje</p>
+            <h2 className="text-3xl font-bold text-slate-800 print:text-5xl">{stats.avgLang}</h2>
           </div>
         )}
 
         {showMath && (
-          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm print:shadow-none print:border-slate-300">
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Promedio Matemáticas</p>
-            <h2 className="text-3xl font-bold text-slate-800">{stats.avgMath}</h2>
+          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm print:shadow-none print:border-none print:p-0">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 print:text-base print:text-slate-500">Promedio Matemáticas</p>
+            <h2 className="text-3xl font-bold text-slate-800 print:text-5xl">{stats.avgMath}</h2>
           </div>
         )}
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 print:grid-cols-2 print:gap-4 print:space-y-0">
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm print:shadow-none print:border-slate-300 print:break-inside-avoid">
-          <h3 className="font-bold text-slate-800 mb-2">Promedios por Curso</h3>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 print:block print:space-y-16">
+        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm print:shadow-none print:border-none print:p-0 print:break-inside-avoid print-page-break">
+          <h3 className="font-bold text-slate-800 mb-6 print:text-2xl border-b pb-2 print:border-slate-300">Promedios por Curso</h3>
           <AverageScoresChart data={filteredData} subjectFilter={subjectFilter} />
         </div>
         
         {subjectFilter === 'Todas' ? (
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm print:shadow-none print:border-slate-300 print:break-inside-avoid flex flex-col md:flex-row gap-6">
-            <div className="flex-1">
-              <h3 className="font-bold text-slate-800 mb-2 text-center">Niveles Lenguaje</h3>
+          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm print:shadow-none print:border-none print:p-0 print:break-inside-avoid print:flex-col md:flex-row gap-6 print-page-break">
+            <div className="flex-1 print:mb-10">
+              <h3 className="font-bold text-slate-800 mb-6 text-center print:text-2xl border-b pb-2 print:border-slate-300">Niveles Lenguaje</h3>
               <PerformancePieChart data={filteredData} subjectFilter="Lenguaje" />
             </div>
-            <div className="hidden md:block w-px bg-slate-200 my-4"></div>
+            <div className="hidden md:block w-px bg-slate-200 my-4 print:hidden"></div>
             <div className="flex-1">
-              <h3 className="font-bold text-slate-800 mb-2 text-center">Niveles Matemáticas</h3>
+              <h3 className="font-bold text-slate-800 mb-6 text-center print:text-2xl border-b pb-2 print:border-slate-300">Niveles Matemáticas</h3>
               <PerformancePieChart data={filteredData} subjectFilter="Matemáticas" />
             </div>
           </div>
         ) : (
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm print:shadow-none print:border-slate-300 print:break-inside-avoid">
-            <h3 className="font-bold text-slate-800 mb-2">Niveles de Desempeño ({subjectFilter})</h3>
+          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm print:shadow-none print:border-none print:p-0 print:break-inside-avoid print-page-break">
+            <h3 className="font-bold text-slate-800 mb-6 print:text-2xl border-b pb-2 print:border-slate-300">Niveles de Desempeño ({subjectFilter})</h3>
             <PerformancePieChart data={filteredData} subjectFilter={subjectFilter} />
           </div>
         )}
 
         {showLang && (
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm lg:col-span-2 print:shadow-none print:border-slate-300 print:break-inside-avoid">
-            <h3 className="font-bold text-slate-800 mb-4">Distribución Lenguaje</h3>
+          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm lg:col-span-2 print:shadow-none print:border-none print:p-0 print:break-inside-avoid print-page-break">
+            <h3 className="font-bold text-slate-800 mb-6 print:text-2xl border-b pb-2 print:border-slate-300">Distribución Lenguaje</h3>
             <ScoreDistributionChart data={filteredData} subject="Leng. Puntaje" />
           </div>
         )}
 
         {showMath && (
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm lg:col-span-2 print:shadow-none print:border-slate-300 print:break-inside-avoid">
-            <h3 className="font-bold text-slate-800 mb-4">Distribución Matemáticas</h3>
+          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm lg:col-span-2 print:shadow-none print:border-none print:p-0 print:break-inside-avoid print-page-break">
+            <h3 className="font-bold text-slate-800 mb-6 print:text-2xl border-b pb-2 print:border-slate-300">Distribución Matemáticas</h3>
             <ScoreDistributionChart data={filteredData} subject="Mat. Puntaje" />
           </div>
         )}
       </div>
 
       {/* Data Table */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mt-6 print:shadow-none print:border-slate-300">
-        <div className="p-5 border-b border-slate-200 flex justify-between items-center print:border-b-2">
-          <h3 className="font-bold text-slate-800">Resultados Detallados</h3>
-          <div className="text-xs text-slate-500 font-medium">Mostrando {sortedData.length} registros</div>
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mt-6 print:shadow-none print:border-none print:mt-16 print-page-break">
+        <div className="p-5 border-b border-slate-200 flex justify-between items-center print:border-b-4 print:p-0 print:pb-4 print:mb-6">
+          <h3 className="font-bold text-slate-800 print:text-2xl">Resultados Detallados</h3>
+          <div className="text-xs text-slate-500 font-medium print:text-base">Mostrando {sortedData.length} registros</div>
         </div>
         <div className="overflow-x-auto print:overflow-visible">
           <table className="w-full text-left text-sm border-collapse">
