@@ -2,7 +2,7 @@
 
 @media print {
   @page {
-    margin: 2cm;
+    margin: 1.5cm;
     size: portrait;
   }
   
@@ -10,10 +10,9 @@
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
     background-color: white !important;
-    font-size: 14pt; /* Aumenta el tamaño base de la letra */
   }
 
-  /* Aseguramos que los textos de los gráficos se vean más grandes al imprimir */
+  /* Aseguramos que los textos de Recharts se vean más grandes al imprimir */
   .recharts-text {
     font-size: 16px !important;
     fill: #334155 !important;
