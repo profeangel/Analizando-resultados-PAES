@@ -1,10 +1,11 @@
 import React, { useState, useMemo, useRef } from 'react';
-import { Search, Filter, ArrowUpRight, ArrowDownRight, Minus, FilePlus, Download, Printer, BookOpen, ChevronUp, ChevronDown, ChevronsUpDown, Info } from 'lucide-react';
+import { Search, Filter, ArrowUpRight, ArrowDownRight, Minus, FilePlus, Download, Printer, BookOpen, ChevronUp, ChevronDown, ChevronsUpDown, Info, Loader2 } from 'lucide-react';
 import { StudentResult } from '../types';
 import { AverageScoresChart, ScoreDistributionChart, PerformancePieChart } from './Charts';
 import { parseCSVs } from '../utils';
 import { scoreToNota } from '../scoreToGrade';
 import { getClassification, SubjectType } from '../classification';
+import { useReactToPrint } from 'react-to-print';
 
 interface DashboardProps {
   data: StudentResult[];
@@ -21,6 +22,7 @@ export default function Dashboard({ data, onReset, onAppendData }: DashboardProp
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const printComponentRef = useRef<HTMLDivElement>(null);
 
   const handleAddFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -34,9 +36,10 @@ export default function Dashboard({ data, onReset, onAppendData }: DashboardProp
     }
   };
 
-  const handleExportPDF = () => {
-    window.print();
-  };
+  const handleExportPDF = useReactToPrint({
+    contentRef: printComponentRef,
+    documentTitle: 'Reporte_Resultados_PAES'
+  });
 
   const handleSort = (key: string) => {
     let direction: 'asc' | 'desc' = 'asc';
@@ -241,7 +244,7 @@ export default function Dashboard({ data, onReset, onAppendData }: DashboardProp
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <button 
-            onClick={handleExportPDF}
+            onClick={() => handleExportPDF()}
             title="Abre el diálogo de impresión. Asegúrate de seleccionar 'Guardar como PDF' como destino."
             className="flex items-center gap-1.5 bg-slate-100 text-slate-700 px-3 py-1.5 rounded-md text-sm font-semibold border border-slate-200 hover:bg-slate-200 transition-colors"
           >
@@ -270,13 +273,14 @@ export default function Dashboard({ data, onReset, onAppendData }: DashboardProp
         </div>
       </div>
 
-      <div className="print:block hidden mb-6">
-        <h2 className="text-2xl font-bold text-slate-800">Reporte de Resultados PAES</h2>
-        <p className="text-slate-500 mt-1">Filtro aplicado: {courseFilter === 'Todos' ? 'Todos los cursos' : courseFilter} | Asignatura: {subjectFilter}</p>
-      </div>
+      <div ref={printComponentRef} className="space-y-6 pb-8 print:p-8">
+        <div className="print:block hidden mb-6">
+          <h2 className="text-3xl font-bold text-slate-800">Reporte de Resultados PAES</h2>
+          <p className="text-slate-500 mt-2 text-lg">Filtro aplicado: {courseFilter === 'Todos' ? 'Todos los cursos' : courseFilter} | Asignatura: {subjectFilter}</p>
+        </div>
 
-      <div className="flex items-center gap-2 mb-4 print:hidden">
-        <h2 className="text-lg font-bold text-slate-800">Métricas Generales</h2>
+        <div className="flex items-center gap-2 mb-4 print:hidden">
+          <h2 className="text-lg font-bold text-slate-800">Métricas Generales</h2>
         <div className="relative group flex items-center">
           <Info size={16} className="text-slate-400 cursor-help" />
           <div className="absolute left-0 top-6 w-96 p-4 bg-slate-800 text-slate-100 text-xs rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 pointer-events-none">
@@ -481,6 +485,7 @@ export default function Dashboard({ data, onReset, onAppendData }: DashboardProp
             </tbody>
           </table>
         </div>
+      </div>
       </div>
     </div>
   );
